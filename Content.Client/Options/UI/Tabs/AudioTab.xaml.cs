@@ -54,6 +54,10 @@ public sealed partial class AudioTab : Control
             SliderVolumeInterface,
             scale: ContentAudioSystem.InterfaceMultiplier);
 
+        Control.AddOptionPercentSlider(
+            CCVars.TTSVolume,
+            SliderVolumeTTS);
+
         // RMC14
         Control.AddOptionPercentSlider(
             RMCCVars.VolumeGainCassettes,
@@ -76,6 +80,7 @@ public sealed partial class AudioTab : Control
         Control.AddOptionCheckBox(CCVars.EventMusicEnabled, EventMusicCheckBox);
         Control.AddOptionCheckBox(CCVars.AdminSoundsEnabled, AdminSoundsCheckBox);
         Control.AddOptionCheckBox(CCVars.BwoinkSoundEnabled, BwoinkSoundCheckBox);
+        Control.AddOptionCheckBox(CCVars.TTSClientEnabled, TTSEnabledCheckBox);
 
         Control.Initialize();
     }
