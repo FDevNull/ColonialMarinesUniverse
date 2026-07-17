@@ -17,6 +17,7 @@ using Content.Shared.AU14.Allegiance;
 using Content.Shared.AU14.Origin;
 using Content.Shared._CMU14.RoundStatistics;
 using Content.Shared._CMU14.Threats;
+using Content.Shared._CMU14.TTS;
 using Content.Shared.Construction.Prototypes;
 using Content.Shared.Database;
 using Content.Shared.Humanoid;
@@ -340,7 +341,10 @@ namespace Content.Server.Database
                 threatPreferences,
                 gamemodeJobPriorities,
                 gamemodeAntagPreferences,
-                gamemodeThreatPreferences
+                gamemodeThreatPreferences,
+                string.IsNullOrWhiteSpace(profile.TTSVoice)
+                    ? (ProtoId<TTSVoicePrototype>?) null
+                    : new ProtoId<TTSVoicePrototype>(profile.TTSVoice)
             );
         }
 
@@ -527,6 +531,7 @@ namespace Content.Server.Database
             profile.CharacterName = humanoid.Name;
             profile.FlavorText = humanoid.FlavorText;
             profile.Species = humanoid.Species;
+            profile.TTSVoice = humanoid.TTSVoice?.Id;
             profile.Age = humanoid.Age;
             profile.Sex = humanoid.Sex.ToString();
             profile.Gender = humanoid.Gender.ToString();

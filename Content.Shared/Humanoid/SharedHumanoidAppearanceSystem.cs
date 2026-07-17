@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Content.Shared.CCVar;
+using Content.Shared._CMU14.TTS;
 using Content.Shared.Decals;
 using Content.Shared.Examine;
 using Content.Shared.Humanoid.Markings;
@@ -455,6 +456,9 @@ public abstract partial class SharedHumanoidAppearanceSystem : EntitySystem
         }
 
         humanoid.Age = profile.Age;
+
+        if (profile.TTSVoice is { } voice && TryComp<TTSComponent>(uid, out var tts))
+            tts.VoicePrototypeId = voice;
 
         Dirty(uid, humanoid);
     }

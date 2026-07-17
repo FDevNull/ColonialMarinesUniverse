@@ -141,6 +141,17 @@
                                     <Control HorizontalExpand="True"/>
                                     <OptionButton Name="PronounsButton" HorizontalAlignment="Right" />
                                 </BoxContainer>
+                                <!-- Text-to-speech voice -->
+                                <BoxContainer HorizontalExpand="True">
+                                    <Label Text="{Loc 'humanoid-profile-editor-tts-voice-label'}" />
+                                    <Control HorizontalExpand="True"/>
+                                    <OptionButton Name="TTSVoiceButton"
+                                                  Filterable="True"
+                                                  MinWidth="280"
+                                                  MaxWidth="280"
+                                                  HorizontalAlignment="Right"
+                                                  ToolTip="{Loc 'humanoid-profile-editor-tts-voice-tooltip'}" />
+                                </BoxContainer>
                                 <!-- Show clothing -->
                                 <BoxContainer HorizontalExpand="True">
                                     <Label Text="{Loc 'humanoid-profile-editor-clothing'}" />

@@ -21,8 +21,11 @@ Each player can disable playback with `tts.client_enabled false` or change the
 linear gain with `tts.volume` (0 through 1). The API token is a confidential,
 server-only CVar and must never be committed to the repository.
 
-Human mobs receive a random voice matching their sex on first speech. A fixed
-voice may be selected on any entity prototype:
+Players select a voice in character setup. The searchable list is filtered to
+voices compatible with the character's sex, and the selection is stored with
+the character profile. Existing profiles and mobs without a saved choice get a
+compatible fallback voice automatically. A fixed voice may also be selected on
+any entity prototype:
 
 ```yaml
 - type: TTS

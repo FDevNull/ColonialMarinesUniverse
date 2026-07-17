@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Content.Server.Database;
+using Content.Shared._CMU14.TTS;
 using Content.Shared.GameTicking;
 using Content.Shared.Humanoid;
 using Content.Shared.Preferences;
@@ -13,6 +14,7 @@ using Robust.Shared.Enums;
 using Robust.Shared.Log;
 using Robust.Shared.Maths;
 using Robust.Shared.Network;
+using Robust.Shared.Prototypes;
 using Robust.UnitTesting;
 
 namespace Content.IntegrationTests.Tests.Preferences
@@ -39,7 +41,7 @@ namespace Content.IntegrationTests.Tests.Preferences
 
         private static HumanoidCharacterProfile CharlieCharlieson()
         {
-            return new()
+            return new HumanoidCharacterProfile
             {
                 Name = "Charlie Charlieson",
                 FlavorText = "The biggest boy around.",
@@ -57,7 +59,7 @@ namespace Content.IntegrationTests.Tests.Preferences
                     Color.Black,
                     HairStyles.DefaultFacialHairStyle,
                     Color.Black)
-            };
+            }.WithTTSVoice(new ProtoId<TTSVoicePrototype>("CMUTTSPapich"));
         }
 
         private static ServerDbSqlite GetDb(RobustIntegrationTest.ServerIntegrationInstance server)
