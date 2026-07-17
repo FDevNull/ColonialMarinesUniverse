@@ -28,3 +28,8 @@ voice may be selected on any entity prototype:
 - type: TTS
   voice: CMUTTSKleiner
 ```
+
+The voice prototypes are synchronized from the live
+[`/api/v1/tts/speakers`](https://ntts.fdev.team/api/v1/tts/speakers) response.
+They include the API-provided display name, description, source, gender, and
+exact speaker identifier.

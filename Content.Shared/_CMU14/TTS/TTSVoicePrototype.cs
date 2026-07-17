@@ -20,6 +20,12 @@ public sealed partial class TTSVoicePrototype : IPrototype, IInheritingPrototype
     [DataField]
     public string Name = string.Empty;
 
+    [DataField]
+    public string Description = string.Empty;
+
+    [DataField]
+    public string Source = string.Empty;
+
     [DataField(required: true)]
     public Sex Sex;
 
