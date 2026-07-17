@@ -6,6 +6,7 @@ using Content.Shared._RMC14.Xenonids.Name;
 using Content.Shared.AU14.Allegiance;
 using Content.Shared.AU14.Origin;
 using Content.Shared._CMU14.Threats;
+using Content.Shared._CMU14.TTS;
 using Content.Shared.CCVar;
 using Content.Shared.Clothing;
 using Content.Shared.GameTicking;
@@ -109,6 +110,12 @@ namespace Content.Shared.Preferences
         /// </summary>
         [DataField]
         public ProtoId<SpeciesPrototype> Species { get; set; } = SharedHumanoidAppearanceSystem.DefaultSpecies;
+
+        /// <summary>
+        /// Voice used to synthesize this character's speech.
+        /// </summary>
+        [DataField]
+        public ProtoId<TTSVoicePrototype>? TTSVoice { get; private set; }
 
         [DataField]
         public int Age { get; set; } = 18;
@@ -246,7 +253,8 @@ namespace Content.Shared.Preferences
             HashSet<ProtoId<ThreatPrototype>>? threatPreferences = null,
             Dictionary<string, Dictionary<ProtoId<JobPrototype>, JobPriority>>? gamemodeJobPriorities = null,
             Dictionary<string, HashSet<ProtoId<AntagPrototype>>>? gamemodeAntagPreferences = null,
-            Dictionary<string, HashSet<ProtoId<ThreatPrototype>>>? gamemodeThreatPreferences = null)
+            Dictionary<string, HashSet<ProtoId<ThreatPrototype>>>? gamemodeThreatPreferences = null,
+            ProtoId<TTSVoicePrototype>? ttsVoice = null)
         {
             Name = name;
             FlavorText = flavortext;
@@ -275,6 +283,7 @@ namespace Content.Shared.Preferences
             _gamemodeJobPriorities = NormalizeGamemodeJobPriorities(gamemodeJobPriorities);
             _gamemodeAntagPreferences = NormalizeGamemodeSetPreferences(gamemodeAntagPreferences);
             _gamemodeThreatPreferences = NormalizeGamemodeSetPreferences(gamemodeThreatPreferences);
+            TTSVoice = ttsVoice;
         }
 
         private static string NormalizePreferenceGamemode(string? gamemode)
@@ -400,7 +409,8 @@ namespace Content.Shared.Preferences
                     pair => new HashSet<ProtoId<AntagPrototype>>(pair.Value)),
                 other.GamemodeThreatPreferences.ToDictionary(
                     pair => pair.Key,
-                    pair => new HashSet<ProtoId<ThreatPrototype>>(pair.Value)))
+                    pair => new HashSet<ProtoId<ThreatPrototype>>(pair.Value)),
+                other.TTSVoice)
         {
         }
 
@@ -471,6 +481,13 @@ namespace Content.Shared.Preferences
             }
 
             var name = GetName(species, gender);
+            var voices = prototypeManager
+                .EnumeratePrototypes<TTSVoicePrototype>()
+                .Where(voice => CanHaveVoice(voice, sex))
+                .ToArray();
+            ProtoId<TTSVoicePrototype>? ttsVoice = voices.Length == 0
+                ? null
+                : random.Pick(voices).ID;
 
             return new HumanoidCharacterProfile()
             {
@@ -479,6 +496,7 @@ namespace Content.Shared.Preferences
                 Age = age,
                 Gender = gender,
                 Species = species,
+                TTSVoice = ttsVoice,
                 Appearance = HumanoidCharacterAppearance.Random(species, sex),
             };
         }
@@ -511,6 +529,11 @@ namespace Content.Shared.Preferences
         public HumanoidCharacterProfile WithSpecies(string species)
         {
             return new(this) { Species = species };
+        }
+
+        public HumanoidCharacterProfile WithTTSVoice(ProtoId<TTSVoicePrototype>? voice)
+        {
+            return new(this) { TTSVoice = voice };
         }
 
 
@@ -860,6 +883,7 @@ namespace Content.Shared.Preferences
             if (Sex != other.Sex) return false;
             if (Gender != other.Gender) return false;
             if (Species != other.Species) return false;
+            if (TTSVoice != other.TTSVoice) return false;
             if (PreferenceUnavailable != other.PreferenceUnavailable) return false;
             if (SpawnPriority != other.SpawnPriority) return false;
             if (SquadPreference != other.SquadPreference) return false;
@@ -1084,6 +1108,18 @@ namespace Content.Shared.Preferences
             Appearance = appearance;
             SpawnPriority = spawnPriority;
 
+            if (TTSVoice is not { } voiceId ||
+                !prototypeManager.TryIndex(voiceId, out TTSVoicePrototype? voice) ||
+                !CanHaveVoice(voice, sex))
+            {
+                var fallbackVoice = prototypeManager
+                    .EnumeratePrototypes<TTSVoicePrototype>()
+                    .Where(candidate => CanHaveVoice(candidate, sex))
+                    .OrderBy(candidate => candidate.ID)
+                    .FirstOrDefault();
+                TTSVoice = fallbackVoice?.ID;
+            }
+
             var armorPreference = ArmorPreference switch
             {
                 ArmorPreference.Random => ArmorPreference.Random,
@@ -1267,6 +1303,13 @@ namespace Content.Shared.Preferences
             return namingSystem.GetName(species, gender);
         }
 
+        public static bool CanHaveVoice(TTSVoicePrototype voice, Sex sex)
+        {
+            return !voice.Abstract &&
+                   voice.RoundStart &&
+                   (sex == Sex.Unsexed || voice.Sex == Sex.Unsexed || voice.Sex == sex);
+        }
+
         public override bool Equals(object? obj)
         {
             return ReferenceEquals(this, obj) || obj is HumanoidCharacterProfile other && Equals(other);
@@ -1282,6 +1325,7 @@ namespace Content.Shared.Preferences
             hashCode.Add(Name);
             hashCode.Add(FlavorText);
             hashCode.Add(Species);
+            hashCode.Add(TTSVoice);
             hashCode.Add(Age);
             hashCode.Add((int)Sex);
             hashCode.Add((int)Gender);

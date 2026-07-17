@@ -18,6 +18,7 @@ using Content.Shared._RMC14.Prototypes;
 using Content.Shared.AU14.Allegiance;
 using Content.Shared.AU14.Origin;
 using Content.Shared._CMU14.Threats;
+using Content.Shared._CMU14.TTS;
 using Content.Shared.CCVar;
 using Content.Shared.Clothing;
 using Content.Shared.GameTicking;
@@ -114,6 +115,7 @@ namespace Content.Client.Lobby.UI
         public HumanoidCharacterProfile? Profile;
 
         private List<SpeciesPrototype> _species = new();
+        private List<TTSVoicePrototype> _ttsVoices = new();
 
         private List<AllegiancePrototype> _allegiances = new();
 
@@ -265,6 +267,19 @@ namespace Content.Client.Lobby.UI
             };
 
             #endregion Gender
+
+            #region TTSVoice
+
+            TTSVoiceButton.OnItemSelected += args =>
+            {
+                if (args.Id < 0 || args.Id >= _ttsVoices.Count)
+                    return;
+
+                TTSVoiceButton.SelectId(args.Id);
+                SetTTSVoice(_ttsVoices[args.Id]);
+            };
+
+            #endregion TTSVoice
 
             RefreshSpecies();
 
@@ -1294,6 +1309,7 @@ namespace Content.Client.Lobby.UI
             UpdateFlavorTextEdit();
             UpdateSexControls();
             UpdateGenderControls();
+            UpdateTTSVoiceControls();
             UpdateSkinColor();
             UpdateSpawnPriorityControls();
             UpdateArmorPreferenceControls();
@@ -1993,6 +2009,7 @@ namespace Content.Client.Lobby.UI
             }
 
             UpdateGenderControls();
+            UpdateTTSVoiceControls();
             Markings.SetSex(newSex);
             ReloadPreview();
         }
@@ -2001,6 +2018,13 @@ namespace Content.Client.Lobby.UI
         {
             Profile = Profile?.WithGender(newGender);
             ReloadPreview();
+        }
+
+        private void SetTTSVoice(TTSVoicePrototype voice)
+        {
+            Profile = Profile?.WithTTSVoice(voice.ID);
+            UpdateTTSVoiceTooltip(voice);
+            SetDirty();
         }
 
         private void SetSpecies(string newSpecies)
@@ -2013,6 +2037,7 @@ namespace Content.Client.Lobby.UI
             // In case there's species restrictions for loadouts
             RefreshLoadouts();
             UpdateSexControls(); // update sex for new species
+            UpdateTTSVoiceControls();
             UpdateSpeciesGuidebookIcon();
             ReloadPreview();
         }
@@ -2517,6 +2542,59 @@ namespace Content.Client.Lobby.UI
             }
 
             PronounsButton.SelectId((int)Profile.Gender);
+        }
+
+        private void UpdateTTSVoiceControls()
+        {
+            TTSVoiceButton.Clear();
+            _ttsVoices.Clear();
+
+            if (Profile == null)
+            {
+                TTSVoiceButton.Disabled = true;
+                return;
+            }
+
+            _ttsVoices = _prototypeManager
+                .EnumeratePrototypes<TTSVoicePrototype>()
+                .Where(voice => HumanoidCharacterProfile.CanHaveVoice(voice, Profile.Sex))
+                .OrderBy(voice => voice.Source, StringComparer.CurrentCultureIgnoreCase)
+                .ThenBy(voice => voice.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+
+            TTSVoiceButton.Disabled = _ttsVoices.Count == 0;
+            for (var i = 0; i < _ttsVoices.Count; i++)
+            {
+                var voice = _ttsVoices[i];
+                TTSVoiceButton.AddItem($"{voice.Name} — {voice.Source}", i);
+            }
+
+            if (_ttsVoices.Count == 0)
+            {
+                TTSVoiceButton.ToolTip = Loc.GetString("humanoid-profile-editor-tts-voice-unavailable");
+                return;
+            }
+
+            var selected = Profile.TTSVoice is { } voiceId
+                ? _ttsVoices.FindIndex(voice => voice.ID == voiceId.Id)
+                : -1;
+
+            if (selected < 0)
+            {
+                selected = 0;
+                Profile = Profile.WithTTSVoice(_ttsVoices[selected].ID);
+            }
+
+            TTSVoiceButton.SelectId(selected);
+            UpdateTTSVoiceTooltip(_ttsVoices[selected]);
+        }
+
+        private void UpdateTTSVoiceTooltip(TTSVoicePrototype voice)
+        {
+            var source = Loc.GetString("humanoid-profile-editor-tts-voice-source", ("source", voice.Source));
+            TTSVoiceButton.ToolTip = string.IsNullOrWhiteSpace(voice.Description)
+                ? source
+                : $"{voice.Description}\n{source}";
         }
 
         private void UpdateSpawnPriorityControls()
