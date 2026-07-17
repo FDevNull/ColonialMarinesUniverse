@@ -1,0 +1,23 @@
+- type: ttsVoice
+  id: CMUTTSKleiner
+  name: Dr. Kleiner
+  sex: Male
+  speaker: kleiner
+
+- type: ttsVoice
+  id: CMUTTSFatherGrigori
+  name: Father Grigori
+  sex: Male
+  speaker: father_grigori
+
+- type: ttsVoice
+  id: CMUTTSAlyx
+  name: Alyx Vance
+  sex: Female
+  speaker: alyx
+
+- type: ttsVoice
+  id: CMUTTSCharlotte
+  name: Charlotte
+  sex: Female
+  speaker: charlotte
